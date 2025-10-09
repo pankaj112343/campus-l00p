@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyHub - Student Study Materials Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --dark: #1f2937;
+            --light: #f9fafb;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: #374151;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .active-page {
+            display: block;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s ease;
+        }
+        
+        .chat-message {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.75rem;
+            word-wrap: break-word;
+        }
+        
+        .chat-message.user {
+            background: var(--primary);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .chat-message.bot {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .admin-only {
+            display: none;
+        }
+        
+        .show-admin {
+            display: block;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #059669;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .resource-card {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        
+        .file-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats-card {
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            position: relative;
+            width: 60px;
+            height: 20px;
+        }
+        
+        .typing-indicator span {
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        
+        .typing-indicator span:nth-child(1) {
+            left: 8px;
+            animation: typing1 0.6s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            left: 8px;
+            animation: typing2 0.6s infinite;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            left: 32px;
+            animation: typing2 0.6s infinite;
+        }
+        
+        .typing-indicator span:nth-child(4) {
+            left: 56px;
+            animation: typing3 0.6s infinite;
+        }
+        
+        @keyframes typing1 {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes typing3 {
+            0% { transform: scale(1); }
+            100% { transform: scale(0); }
+        }
+        
+        @keyframes typing2 {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(24px, 0); }
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.75rem;
+            word-wrap: break-word;
+        }
+        
+        .message-bubble.sent {
+            background: var(--primary);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .message-bubble.received {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .college-card {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .college-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        
+        .college-match {
+            border: 2px solid #10b981;
+        }
+    </style>
+</head>
+<body>
+    <!-- Preloader -->
+    <div id="preloader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <div class="flex space-x-2 mb-4">
+            <div class="w-4 h-4 rounded-full bg-blue-500 animate-bounce"></div>
+            <div class="w-4 h-4 rounded-full bg-blue-500 animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-4 h-4 rounded-full bg-blue-500 animate-bounce" style="animation-delay: 0.2s"></div>
+        </div>
+        <h2 class="text-xl font-bold text-gray-700">Loading StudyHub</h2>
+        <p class="text-gray-500 mt-2">Your professional study materials platform</p>
+    </div>
+
+    <!-- Admin Access Modal -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Admin Access</h3>
+                <button onclick="closeModal('admin-modal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="admin-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Admin Key</label>
+                    <input type="password" id="admin-key" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Enter admin key">
+                </div>
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary w-full">
+                        Access Dashboard
+                    </button>
+                </div>
+            </form>
+            <div id="admin-message" class="mt-4 text-center text-sm hidden"></div>
+        </div>
+    </div>
+
+    <!-- Auth Modals -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Sign In to StudyHub</h3>
+                <button onclick="closeModal('login-modal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email or Phone</label>
+                    <input type="text" id="login-identifier" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary w-full">
+                        Sign In
+                    </button>
+                </div>
+                <div class="text-center">
+                    <button type="button" onclick="showForgotPassword()" class="text-blue-500 hover:text-blue-700 text-sm mr-4">
+                        Forgot Password?
+                    </button>
+                    <button type="button" onclick="showSignup()" class="text-blue-500 hover:text-blue-700 text-sm">
+                        Create Account
+                    </button>
+                </div>
+            </form>
+            <div class="my-4 text-center text-gray-500">or</div>
+            <div class="mb-4">
+                <button onclick="signInWithGoogle()" class="btn w-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center">
+                    <i class="fab fa-google mr-2"></i> Sign in with Google
+                </button>
+            </div>
+            <div id="login-message" class="mt-4 text-center text-sm hidden"></div>
+        </div>
+    </div>
+
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Join StudyHub</h3>
+                <button onclick="closeModal('signup-modal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="signup-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                    <input type="text" id="signup-name" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="signup-email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="signup-phone" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                        <select id="signup-country" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select Country</option>
+                            <option value="India">India</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                            <option value="Germany">Germany</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                        <input type="text" id="signup-state" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pincode/Zip</label>
+                        <input type="text" id="signup-pincode" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">College/University</label>
+                        <input type="text" id="signup-college" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Start typing to search...">
+                        <div id="college-suggestions" class="hidden mt-1 border border-gray-300 rounded-md bg-white max-h-40 overflow-y-auto"></div>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                    <input type="password" id="signup-password" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary w-full">
+                        Create Account
+                    </button>
+                </div>
+                <div class="text-center">
+                    <button type="button" onclick="showLogin()" class="text-blue-500 hover:text-blue-700 text-sm">
+                        Already have an account? Sign In
+                    </button>
+                </div>
+            </form>
+            <div class="my-4 text-center text-gray-500">or</div>
+            <div class="mb-4">
+                <button onclick="signInWithGoogle()" class="btn w-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center">
+                    <i class="fab fa-google mr-2"></i> Sign up with Google
+                </button>
+            </div>
+            <div id="signup-message" class="mt-4 text-center text-sm hidden"></div>
+        </div>
+    </div>
+
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Reset Password</h3>
+                <button onclick="closeModal('forgot-password-modal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="forgot-password-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email or Phone</label>
+                    <input type="text" id="reset-identifier" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <button type="button" onclick="sendOTP()" class="btn btn-primary w-full">
+                        Send OTP
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">OTP</label>
+                    <input type="text" id="reset-otp" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                    <input type="password" id="reset-password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary w-full">
+                        Reset Password
+                    </button>
+                </div>
+                <div class="text-center">
+                    <button type="button" onclick="showLogin()" class="text-blue-500 hover:text-blue-700 text-sm">
+                        Back to Sign In
+                    </button>
+                </div>
+            </form>
+            <div id="forgot-password-message" class="mt-4 text-center text-sm hidden"></div>
+        </div>
+    </div>
+
+    <!-- Chatbot Modal -->
+    <div id="chatbot-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; height: 70vh; display: flex; flex-direction: column;">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Study Assistant</h3>
+                <button onclick="closeModal('chatbot-modal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chatbot-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 rounded-lg mb-4">
+                <div class="chat-message bot">
+                    <p>Hello! I'm your Study Assistant. How can I help you with your studies today?</p>
+                </div>
+            </div>
+            <div class="flex">
+                <input type="text" id="chatbot-input" placeholder="Ask a question..." class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <button id="send-chatbot" class="btn btn-primary rounded-l-none">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messaging Modal -->
+    <div id="messaging-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px; height: 70vh; display: flex; flex-direction: column;">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                    <span id="message-recipient"></span>
+                    <span class="online-indicator ml-2"></span>
+                    <span class="text-sm font-normal text-green-600 ml-1">Online</span>
+                </h3>
+                <button onclick="closeModal('messaging-modal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="message-container" class="flex-1 overflow-y-auto p-4 bg-gray-50 rounded-lg mb-4">
+                <!-- Messages will appear here -->
+            </div>
+            <div class="flex">
+                <input type="text" id="message-input" placeholder="Type your message..." class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <button id="send-message" class="btn btn-primary rounded-l-none">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="showPage('resources')">
+                            <i class="fas fa-graduation-cap text-blue-500 text-2xl"></i>
+                            <span class="ml-2 text-xl font-bold text-gray-800">StudyHub</span>
+                        </div>
+                        <div class="hidden md:ml-6 md:flex md:space-x-8">
+                            <button onclick="showAdminModal()" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</button>
+                            <button onclick="showPage('resources')" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Resources</button>
+                            <button onclick="showPage('upload')" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Upload</button>
+                            <button onclick="showPage('colleges')" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Colleges</button>
+                            <button onclick="showPage('leaderboard')" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Leaderboard</button>
+                            <button onclick="showPage('messages')" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Messages</button>
+                        </div>
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:items-center">
+                        <div id="user-info" class="hidden mr-4">
+                            <span class="text-gray-700 font-medium" id="user-name"></span>
+                        </div>
+                        <button onclick="openChatbot()" class="btn btn-secondary mr-2">
+                            <i class="fas fa-robot mr-2"></i>AI Assistant
+                        </button>
+                        <button id="auth-button" class="btn btn-primary">
+                            <i class="fas fa-user mr-2"></i>Sign In
+                        </button>
+                        <button id="sign-out-button" class="btn btn-outline ml-2 hidden">Sign Out</button>
+                    </div>
+                    <div class="md:hidden flex items-center">
+                        <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
+                <div class="px-2 pt-2 pb-3 space-y-1">
+                    <button onclick="showAdminModal()" class="block w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Dashboard</button>
+                    <button onclick="showPage('resources')" class="block w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Resources</button>
+                    <button onclick="showPage('upload')" class="block w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Upload</button>
+                    <button onclick="showPage('colleges')" class="block w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Colleges</button>
+                    <button onclick="showPage('leaderboard')" class="block w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Leaderboard</button>
+                    <button onclick="showPage('messages')" class="block w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Messages</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page admin-only">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+                    <p class="text-gray-500">Welcome to the admin dashboard. Here you can monitor platform activity.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="stats-card card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Resources</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1" id="total-resources">47</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-book text-blue-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Users</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1" id="total-users">128</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-green-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-card card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Downloads</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1" id="total-downloads">342</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-download text-purple-500 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-card mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">Recent Study Resources</h3>
+                        <button onclick="showPage('resources')" class="text-blue-500 hover:text-blue-700 font-medium">View All</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="recent-resources">
+                        <!-- Recent resources will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="stats-card">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <button onclick="showPage('resources')" class="bg-blue-50 hover:bg-blue-100 p-6 rounded-lg flex flex-col items-center justify-center transition-colors card-hover">
+                            <i class="fas fa-search text-blue-500 text-3xl mb-3"></i>
+                            <span class="font-medium text-blue-700 text-lg">Browse Resources</span>
+                            <p class="text-gray-600 text-sm mt-2 text-center">Find study materials by class and subject</p>
+                        </button>
+                        <button onclick="showPage('upload')" class="bg-green-50 hover:bg-green-100 p-6 rounded-lg flex flex-col items-center justify-center transition-colors card-hover">
+                            <i class="fas fa-upload text-green-500 text-3xl mb-3"></i>
+                            <span class="font-medium text-green-700 text-lg">Upload Notes</span>
+                            <p class="text-gray-600 text-sm mt-2 text-center">Share your study materials with others</p>
+                        </button>
+                        <button onclick="openChatbot()" class="bg-purple-50 hover:bg-purple-100 p-6 rounded-lg flex flex-col items-center justify-center transition-colors card-hover">
+                            <i class="fas fa-robot text-purple-500 text-3xl mb-3"></i>
+                            <span class="font-medium text-purple-700 text-lg">AI Assistant</span>
+                            <p class="text-gray-600 text-sm mt-2 text-center">Get help with your studies using AI</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resources Page -->
+            <div id="resources" class="page active-page">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Study Resources</h1>
+                    <p class="text-gray-500">Find study materials shared by students from various educational institutions</p>
+                </div>
+                
+                <div class="stats-card mb-8">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="text-lg font-bold text-gray-800">Search Resources</h3>
+                            <p class="text-gray-500 text-sm">Filter by class, stream, semester or subject</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                            <select id="class-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">All Classes</option>
+                                <option>11th</option>
+                                <option>12th</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Stream</label>
+                            <select id="stream-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">All Streams</option>
+                                <option>Science</option>
+                                <option>Commerce</option>
+                                <option>Arts</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                            <select id="semester-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">All Semesters</option>
+                                <option>Semester 1</option>
+                                <option>Semester 2</option>
+                                <option>Semester 3</option>
+                                <option>Semester 4</option>
+                                <option>Semester 5</option>
+                                <option>Semester 6</option>
+                                <option>Semester 7</option>
+                                <option>Semester 8</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                            <input type="text" id="subject-filter" placeholder="Enter subject" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="Search for notes, assignments, projects..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <i class="fas fa-search absolute left-3 top-4 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resources-container">
+                    <!-- Resources will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Colleges Page -->
+            <div id="colleges" class="page">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Find Colleges & Universities</h1>
+                    <p class="text-gray-500">Search for educational institutions and connect with students from the same college</p>
+                </div>
+                
+                <div class="stats-card mb-8">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="text-lg font-bold text-gray-800">Search Colleges</h3>
+                            <p class="text-gray-500 text-sm">Find colleges by location or name</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                            <select id="college-country" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">All Countries</option>
+                                <option value="India">India</option>
+                                <option value="United States">United States</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Canada">Canada</option>
+                                <option value="Australia">Australia</option>
+                                <option value="Germany">Germany</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <input type="text" id="college-state" placeholder="Enter state" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pincode/Zip</label>
+                            <input type="text" id="college-pincode" placeholder="Enter pincode" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">College Name</label>
+                            <input type="text" id="college-name" placeholder="Enter college name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <button onclick="searchColleges()" class="btn btn-primary">
+                            <i class="fas fa-search mr-2"></i> Search Colleges
+                        </button>
+                        <button onclick="clearCollegeSearch()" class="btn btn-outline">
+                            <i class="fas fa-times mr-2"></i> Clear Filters
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="colleges-container">
+                    <!-- Colleges will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Upload Page -->
+            <div id="upload" class="page">
+                <div class="max-w-2xl mx-auto">
+                    <div class="stats-card">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Upload Study Material</h2>
+                        
+                        <form id="upload-form">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                                    <input type="text" id="upload-title" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Calculus Notes Chapter 1">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                                    <textarea id="upload-description" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Describe your study material..."></textarea>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                                        <select id="upload-class" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">Select Class (Optional)</option>
+                                            <option value="11th">11th</option>
+                                            <option value="12th">12th</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Stream *</label>
+                                        <select id="upload-stream" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">Select Stream</option>
+                                            <option value="Science">Science</option>
+                                            <option value="Commerce">Commerce</option>
+                                            <option value="Arts">Arts</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Semester *</label>
+                                        <select id="upload-semester" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">Select Semester</option>
+                                            <option value="Semester 1">Semester 1</option>
+                                            <option value="Semester 2">Semester 2</option>
+                                            <option value="Semester 3">Semester 3</option>
+                                            <option value="Semester 4">Semester 4</option>
+                                            <option value="Semester 5">Semester 5</option>
+                                            <option value="Semester 6">Semester 6</option>
+                                            <option value="Semester 7">Semester 7</option>
+                                            <option value="Semester 8">Semester 8</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+                                        <input type="text" id="upload-subject" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Mathematics, Physics, Accounts">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">File Type</label>
+                                    <select id="upload-file-type" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="PDF">PDF</option>
+                                        <option value="DOC">DOC/DOCX</option>
+                                        <option value="PPT">PPT/PPTX</option>
+                                        <option value="Image">Image</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload File *</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                        <div class="space-y-1 text-center">
+                                            <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mx-auto"></i>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                                    <span>Upload a file</span>
+                                                    <input id="file-upload" name="file-upload" type="file" class="sr-only">
+                                                </label>
+                                                <p class="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">PDF, DOC, PPT up to 10MB</p>
+                                        </div>
+                                    </div>
+                                    <div id="file-name" class="mt-2 text-sm text-gray-600 hidden"></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <button type="submit" class="btn btn-primary w-full py-3 text-lg">
+                                    Upload Resource
+                                </button>
+                            </div>
+
+                            <div id="upload-status" class="mt-4 text-center"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Page -->
+            <div id="leaderboard" class="page">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Leaderboard</h1>
+                    <p class="text-gray-500">Top contributors based on activity and uploads</p>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">Top Contributors</h3>
+                        <div class="flex space-x-2">
+                            <button id="leaderboard-weekly" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm font-medium">Weekly</button>
+                            <button id="leaderboard-monthly" class="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium">Monthly</button>
+                            <button id="leaderboard-alltime" class="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium">All Time</button>
+                        </div>
+                    </div>
+                    
+                    <div id="leaderboard-container">
+                        <!-- Leaderboard items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Page -->
+            <div id="messages" class="page">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Messages</h1>
+                    <p class="text-gray-500">Connect with other students and share knowledge</p>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold text-gray-800">Your Conversations</h3>
+                        <button class="btn btn-primary flex items-center">
+                            <i class="fas fa-plus mr-2"></i> New Message
+                        </button>
+                    </div>
+                    
+                    <div id="conversations-container">
+                        <!-- Conversations will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // College database
+        const colleges = [
+            { id: 1, name: "Delhi University", country: "India", state: "Delhi", pincode: "110007", students: 25000, courses: 200 },
+            { id: 2, name: "University of Mumbai", country: "India", state: "Maharashtra", pincode: "400032", students: 18000, courses: 150 },
+            { id: 3, name: "University of Calcutta", country: "India", state: "West Bengal", pincode: "700073", students: 22000, courses: 180 },
+            { id: 4, name: "Harvard University", country: "United States", state: "Massachusetts", pincode: "02138", students: 21000, courses: 350 },
+            { id: 5, name: "Stanford University", country: "United States", state: "California", pincode: "94305", students: 17000, courses: 300 },
+            { id: 6, name: "University of Oxford", country: "United Kingdom", state: "Oxfordshire", pincode: "OX1 2JD", students: 24000, courses: 320 },
+            { id: 7, name: "University of Cambridge", country: "United Kingdom", state: "Cambridgeshire", pincode: "CB2 1TN", students: 19000, courses: 280 },
+            { id: 8, name: "University of Toronto", country: "Canada", state: "Ontario", pincode: "M5S 1A1", students: 90000, courses: 700 },
+            { id: 9, name: "University of Melbourne", country: "Australia", state: "Victoria", pincode: "3010", students: 50000, courses: 400 },
+            { id: 10, name: "Technical University of Munich", country: "Germany", state: "Bavaria", pincode: "80333", students: 42000, courses: 180 },
+            { id: 11, name: "Indian Institute of Technology Delhi", country: "India", state: "Delhi", pincode: "110016", students: 10000, courses: 80 },
+            { id: 12, name: "Indian Institute of Technology Bombay", country: "India", state: "Maharashtra", pincode: "400076", students: 11000, courses: 85 },
+            { id: 13, name: "Indian Institute of Technology Madras", country: "India", state: "Tamil Nadu", pincode: "600036", students: 9500, courses: 75 },
+            { id: 14, name: "Massachusetts Institute of Technology", country: "United States", state: "Massachusetts", pincode: "02139", students: 11500, courses: 250 },
+            { id: 15, name: "California Institute of Technology", country: "United States", state: "California", pincode: "91125", students: 2200, courses: 120 }
+        ];
+
+        // User data
+        let currentUser = null;
+        let userCollege = null;
+
+        // Preloader
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('preloader').style.display = 'none';
+                document.getElementById('app').classList.remove('hidden');
+                showPage('resources');
+                loadResources();
+                loadLeaderboard();
+                loadConversations();
+                loadAdminDashboard();
+                loadColleges();
+            }, 1500);
+        });
+
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active-page');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active-page');
+            
+            // Close mobile menu if open
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Admin Functions
+        function showAdminModal() {
+            openModal('admin-modal');
+        }
+
+        document.getElementById('admin-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const adminKey = document.getElementById('admin-key').value;
+            const messageEl = document.getElementById('admin-message');
+            
+            if (adminKey === 'wed8') {
+                messageEl.textContent = 'Access granted!';
+                messageEl.className = 'mt-4 text-center text-sm text-green-600';
+                messageEl.classList.remove('hidden');
+                
+                // Show admin dashboard
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.classList.add('show-admin');
+                });
+                
+                showPage('dashboard');
+                closeModal('admin-modal');
+            } else {
+                messageEl.textContent = 'Invalid admin key. Please try again.';
+                messageEl.className = 'mt-4 text-center text-sm text-red-600';
+                messageEl.classList.remove('hidden');
+            }
+        });
+
+        // College Search Functions
+        function searchColleges() {
+            const country = document.getElementById('college-country').value;
+            const state = document.getElementById('college-state').value.toLowerCase();
+            const pincode = document.getElementById('college-pincode').value;
+            const name = document.getElementById('college-name').value.toLowerCase();
+            
+            const filteredColleges = colleges.filter(college => {
+                const matchesCountry = !country || college.country === country;
+                const matchesState = !state || college.state.toLowerCase().includes(state);
+                const matchesPincode = !pincode || college.pincode.includes(pincode);
+                const matchesName = !name || college.name.toLowerCase().includes(name);
+                
+                return matchesCountry && matchesState && matchesPincode && matchesName;
+            });
+            
+            displayColleges(filteredColleges);
+        }
+
+        function clearCollegeSearch() {
+            document.getElementById('college-country').value = '';
+            document.getElementById('college-state').value = '';
+            document.getElementById('college-pincode').value = '';
+            document.getElementById('college-name').value = '';
+            loadColleges();
+        }
+
+        function loadColleges() {
+            displayColleges(colleges);
+        }
+
+        function displayColleges(collegesToDisplay) {
+            const container = document.getElementById('colleges-container');
+            container.innerHTML = '';
+            
+            if (collegesToDisplay.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center col-span-3">No colleges found matching your criteria.</p>';
+                return;
+            }
+            
+            collegesToDisplay.forEach(college => {
+                const isUserCollege = currentUser && userCollege && userCollege.id === college.id;
+                
+                const collegeEl = document.createElement('div');
+                collegeEl.className = `college-card ${isUserCollege ? 'college-match' : ''}`;
+                collegeEl.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800">${college.name}</h3>
+                                <p class="text-sm text-gray-600">${college.country}, ${college.state}</p>
+                            </div>
+                            ${isUserCollege ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Your College</span>' : ''}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <span class="mr-3"><i class="fas fa-map-marker-alt mr-1"></i> ${college.pincode}</span>
+                            <span><i class="fas fa-users mr-1"></i> ${college.students.toLocaleString()}+ students</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-4">
+                            <i class="fas fa-book mr-1"></i> ${college.courses}+ courses offered
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <button onclick="viewCollegeStudents(${college.id})" class="btn btn-primary flex items-center">
+                                <i class="fas fa-eye mr-2"></i> View Students
+                            </button>
+                            ${!isUserCollege ? `<button onclick="setAsMyCollege(${college.id})" class="text-blue-500 hover:text-blue-700 text-sm font-medium flex items-center">
+                                <i class="fas fa-check mr-1"></i> Set as My College
+                            </button>` : ''}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(collegeEl);
+            });
+        }
+
+        function viewCollegeStudents(collegeId) {
+            const college = colleges.find(c => c.id === collegeId);
+            if (college) {
+                alert(`Viewing students from ${college.name}\n\nThis feature would show all students registered from this college in a real application.`);
+            }
+        }
+
+        function setAsMyCollege(collegeId) {
+            const college = colleges.find(c => c.id === collegeId);
+            if (college) {
+                userCollege = college;
+                if (currentUser) {
+                    alert(`Successfully set ${college.name} as your college!`);
+                    loadColleges();
+                } else {
+                    alert(`Please sign in to set ${college.name} as your college.`);
+                    showLogin();
+                }
+            }
+        }
+
+        // College suggestions for signup form
+        document.getElementById('signup-college').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const suggestionsContainer = document.getElementById('college-suggestions');
+            
+            if (query.length < 2) {
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+            
+            const matchingColleges = colleges.filter(college => 
+                college.name.toLowerCase().includes(query)
+            );
+            
+            if (matchingColleges.length === 0) {
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+            
+            suggestionsContainer.innerHTML = '';
+            matchingColleges.slice(0, 5).forEach(college => {
+                const suggestion = document.createElement('div');
+                suggestion.className = 'px-3 py-2 hover:bg-gray-100 cursor-pointer';
+                suggestion.textContent = college.name;
+                suggestion.onclick = function() {
+                    document.getElementById('signup-college').value = college.name;
+                    suggestionsContainer.classList.add('hidden');
+                };
+                suggestionsContainer.appendChild(suggestion);
+            });
+            
+            suggestionsContainer.classList.remove('hidden');
+        });
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#signup-college') && !e.target.closest('#college-suggestions')) {
+                document.getElementById('college-suggestions').classList.add('hidden');
+            }
+        });
+
+        // Authentication Functions
+        function showLogin() {
+            closeModal('signup-modal');
+            closeModal('forgot-password-modal');
+            openModal('login-modal');
+        }
+
+        function showSignup() {
+            closeModal('login-modal');
+            closeModal('forgot-password-modal');
+            openModal('signup-modal');
+        }
+
+        function showForgotPassword() {
+            closeModal('login-modal');
+            closeModal('signup-modal');
+            openModal('forgot-password-modal');
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
+            const messageEl = document.getElementById('login-message');
+            
+            // Simulate login
+            if (identifier && password) {
+                currentUser = {
+                    name: identifier,
+                    email: identifier.includes('@') ? identifier : null,
+                    phone: !identifier.includes('@') ? identifier : null
+                };
+                
+                messageEl.textContent = 'Login successful!';
+                messageEl.className = 'mt-4 text-center text-sm text-green-600';
+                
+                // Update UI for logged in user
+                document.getElementById('user-name').textContent = identifier;
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('auth-button').classList.add('hidden');
+                document.getElementById('sign-out-button').classList.remove('hidden');
+                
+                closeModal('login-modal');
+            } else {
+                messageEl.textContent = 'Please fill in all fields.';
+                messageEl.className = 'mt-4 text-center text-sm text-red-600';
+            }
+            messageEl.classList.remove('hidden');
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const phone = document.getElementById('signup-phone').value;
+            const country = document.getElementById('signup-country').value;
+            const state = document.getElementById('signup-state').value;
+            const pincode = document.getElementById('signup-pincode').value;
+            const college = document.getElementById('signup-college').value;
+            const password = document.getElementById('signup-password').value;
+            const messageEl = document.getElementById('signup-message');
+            
+            // Simulate signup
+            if (name && password) {
+                currentUser = {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    country: country,
+                    state: state,
+                    pincode: pincode,
+                    college: college
+                };
+                
+                // Try to match college
+                if (college) {
+                    const matchedCollege = colleges.find(c => 
+                        c.name.toLowerCase() === college.toLowerCase()
+                    );
+                    if (matchedCollege) {
+                        userCollege = matchedCollege;
+                    }
+                }
+                
+                messageEl.textContent = 'Account created successfully!';
+                messageEl.className = 'mt-4 text-center text-sm text-green-600';
+                
+                // Update UI for logged in user
+                document.getElementById('user-name').textContent = name;
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('auth-button').classList.add('hidden');
+                document.getElementById('sign-out-button').classList.remove('hidden');
+                
+                closeModal('signup-modal');
+            } else {
+                messageEl.textContent = 'Please fill in all required fields.';
+                messageEl.className = 'mt-4 text-center text-sm text-red-600';
+            }
+            messageEl.classList.remove('hidden');
+        });
+
+        function sendOTP() {
+            const identifier = document.getElementById('reset-identifier').value;
+            const messageEl = document.getElementById('forgot-password-message');
+            
+            if (identifier) {
+                messageEl.textContent = 'OTP sent to your email/phone!';
+                messageEl.className = 'mt-4 text-center text-sm text-green-600';
+            } else {
+                messageEl.textContent = 'Please enter your email or phone number.';
+                messageEl.className = 'mt-4 text-center text-sm text-red-600';
+            }
+            messageEl.classList.remove('hidden');
+        }
+
+        document.getElementById('forgot-password-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const otp = document.getElementById('reset-otp').value;
+            const newPassword = document.getElementById('reset-password').value;
+            const messageEl = document.getElementById('forgot-password-message');
+            
+            if (otp && newPassword) {
+                messageEl.textContent = 'Password reset successfully!';
+                messageEl.className = 'mt-4 text-center text-sm text-green-600';
+                
+                setTimeout(() => {
+                    closeModal('forgot-password-modal');
+                    showLogin();
+                }, 1500);
+            } else {
+                messageEl.textContent = 'Please enter OTP and new password.';
+                messageEl.className = 'mt-4 text-center text-sm text-red-600';
+            }
+            messageEl.classList.remove('hidden');
+        });
+
+        function signInWithGoogle() {
+            // Simulate Google sign in
+            currentUser = {
+                name: 'Google User',
+                email: 'googleuser@example.com'
+            };
+            
+            document.getElementById('user-name').textContent = 'Google User';
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('auth-button').classList.add('hidden');
+            document.getElementById('sign-out-button').classList.remove('hidden');
+            
+            closeModal('login-modal');
+            closeModal('signup-modal');
+        }
+
+        document.getElementById('sign-out-button').addEventListener('click', function() {
+            currentUser = null;
+            userCollege = null;
+            document.getElementById('user-info').classList.add('hidden');
+            document.getElementById('auth-button').classList.remove('hidden');
+            document.getElementById('sign-out-button').classList.add('hidden');
+        });
+
+        // File Upload
+        document.getElementById('file-upload').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            const fileNameEl = document.getElementById('file-name');
+            
+            if (fileName) {
+                fileNameEl.textContent = `Selected file: ${fileName}`;
+                fileNameEl.classList.remove('hidden');
+            } else {
+                fileNameEl.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const statusEl = document.getElementById('upload-status');
+            
+            // Check if file is selected
+            const fileInput = document.getElementById('file-upload');
+            if (!fileInput.files[0]) {
+                statusEl.textContent = 'Please select a file to upload.';
+                statusEl.className = 'mt-4 text-center text-sm text-red-600';
+                return;
+            }
+            
+            // Simulate upload
+            statusEl.textContent = 'Uploading...';
+            statusEl.className = 'mt-4 text-center text-sm text-blue-600';
+            
+            setTimeout(() => {
+                statusEl.textContent = 'File uploaded successfully!';
+                statusEl.className = 'mt-4 text-center text-sm text-green-600';
+                
+                // Reset form
+                document.getElementById('upload-form').reset();
+                document.getElementById('file-name').classList.add('hidden');
+                
+                // Add to resources
+                addNewResource();
+            }, 2000);
+        });
+
+        // AI Assistant
+        function openChatbot() {
+            openModal('chatbot-modal');
+        }
+
+        document.getElementById('send-chatbot').addEventListener('click', sendChatMessage);
+        document.getElementById('chatbot-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatbot-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'chat-message bot';
+            typingIndicator.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            document.getElementById('chatbot-messages').appendChild(typingIndicator);
+            document.getElementById('chatbot-messages').scrollTop = document.getElementById('chatbot-messages').scrollHeight;
+            
+            // Simulate AI response
+            setTimeout(() => {
+                // Remove typing indicator
+                typingIndicator.remove();
+                
+                const responses = [
+                    "I can help you with that! Could you provide more details about your question?",
+                    "That's an interesting question. Let me find the best resources for you.",
+                    "I understand you're looking for study materials. Have you checked the resources section?",
+                    "Based on your query, I recommend checking the upload section to share your own notes.",
+                    "I'm here to help with your studies. What specific topic are you struggling with?"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addChatMessage(randomResponse, 'bot');
+            }, 1500);
+        }
+
+        function addChatMessage(message, sender) {
+            const messagesContainer = document.getElementById('chatbot-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = `<p>${message}</p>`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Messaging System
+        function openMessaging(recipient) {
+            document.getElementById('message-recipient').textContent = recipient;
+            openModal('messaging-modal');
+            
+            // Load messages for this recipient
+            loadMessages(recipient);
+        }
+
+        document.getElementById('send-message').addEventListener('click', sendMessage);
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            const recipient = document.getElementById('message-recipient').textContent;
+            
+            if (!message) return;
+            
+            // Add message to UI
+            addMessageToUI(message, 'sent', recipient);
+            input.value = '';
+            
+            // Simulate response
+            setTimeout(() => {
+                const responses = [
+                    "Thanks for your message! I'll check the notes and get back to you.",
+                    "I have those notes. I can share them with you.",
+                    "Could you clarify what exactly you need help with?",
+                    "I'm currently studying that topic too. Let's work on it together!",
+                    "I've uploaded the resources you requested. Check the resources section."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addMessageToUI(randomResponse, 'received', recipient);
+            }, 1500);
+        }
+
+        function addMessageToUI(message, type, recipient) {
+            const container = document.getElementById('message-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-bubble ${type}`;
+            messageDiv.innerHTML = `<p>${message}</p>`;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function loadMessages(recipient) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = '';
+            
+            // Add sample messages
+            addMessageToUI(`Hi! I saw you uploaded notes about ${recipient}. Can you share more?`, 'sent', recipient);
+            addMessageToUI("Sure! What specific topics are you interested in?", 'received', recipient);
+        }
+
+        // Resource Download
+        function downloadResource(resourceId, resourceName) {
+            // Create a fake download link
+            const link = document.createElement('a');
+            link.href = '#'; // In a real app, this would be the actual file URL
+            link.download = resourceName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Update download count
+            updateDownloadCount(resourceId);
+            
+            // Show success message
+            alert(`Downloading ${resourceName}...`);
+        }
+
+        function updateDownloadCount(resourceId) {
+            // In a real app, this would update the count in the database
+            console.log(`Download count updated for resource ${resourceId}`);
+        }
+
+        // Data Loading Functions
+        function loadAdminDashboard() {
+            // Load recent resources
+            const recentContainer = document.getElementById('recent-resources');
+            recentContainer.innerHTML = '';
+            
+            const sampleResources = [
+                { title: 'Calculus Notes', subject: 'Mathematics', class: '12th', downloads: 24 },
+                { title: 'Organic Chemistry', subject: 'Chemistry', class: '11th', downloads: 18 },
+                { title: 'Physics Formulas', subject: 'Physics', class: '12th', downloads: 32 }
+            ];
+            
+            sampleResources.forEach(resource => {
+                const resourceEl = document.createElement('div');
+                resourceEl.className = 'bg-gray-50 p-4 rounded-lg card-hover';
+                resourceEl.innerHTML = `
+                    <h4 class="font-medium text-gray-800">${resource.title}</h4>
+                    <p class="text-sm text-gray-600">${resource.subject} • ${resource.class}</p>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-xs text-gray-500">${resource.downloads} downloads</span>
+                        <button class="text-blue-500 text-sm font-medium">View</button>
+                    </div>
+                `;
+                recentContainer.appendChild(resourceEl);
+            });
+        }
+
+        function loadResources() {
+            const container = document.getElementById('resources-container');
+            container.innerHTML = '';
+            
+            const sampleResources = [
+                { 
+                    id: 1, 
+                    title: 'Calculus Notes Chapter 1', 
+                    description: 'Comprehensive notes on limits and derivatives with solved examples.', 
+                    subject: 'Mathematics', 
+                    class: '12th', 
+                    stream: 'Science', 
+                    semester: 'Semester 1', 
+                    fileType: 'PDF', 
+                    uploader: 'Rahul Sharma',
+                    downloads: 24,
+                    date: '2023-10-15'
+                },
+                { 
+                    id: 2, 
+                    title: 'Organic Chemistry Reactions', 
+                    description: 'Important named reactions with mechanisms and examples.', 
+                    subject: 'Chemistry', 
+                    class: '11th', 
+                    stream: 'Science', 
+                    semester: 'Semester 2', 
+                    fileType: 'PDF', 
+                    uploader: 'Priya Patel',
+                    downloads: 18,
+                    date: '2023-10-12'
+                },
+                { 
+                    id: 3, 
+                    title: 'Physics Formulas Compilation', 
+                    description: 'All important formulas for mechanics, electricity and magnetism.', 
+                    subject: 'Physics', 
+                    class: '12th', 
+                    stream: 'Science', 
+                    semester: 'Semester 3', 
+                    fileType: 'DOC', 
+                    uploader: 'Amit Kumar',
+                    downloads: 32,
+                    date: '2023-10-10'
+                },
+                { 
+                    id: 4, 
+                    title: 'Accountancy Basics', 
+                    description: 'Fundamental concepts of accounting with practical examples.', 
+                    subject: 'Accountancy', 
+                    class: '11th', 
+                    stream: 'Commerce', 
+                    semester: 'Semester 1', 
+                    fileType: 'PDF', 
+                    uploader: 'Neha Gupta',
+                    downloads: 15,
+                    date: '2023-10-08'
+                },
+                { 
+                    id: 5, 
+                    title: 'Business Studies Case Studies', 
+                    description: 'Collection of important case studies for exam preparation.', 
+                    subject: 'Business Studies', 
+                    class: '12th', 
+                    stream: 'Commerce', 
+                    semester: 'Semester 4', 
+                    fileType: 'PPT', 
+                    uploader: 'Vikram Singh',
+                    downloads: 21,
+                    date: '2023-10-05'
+                },
+                { 
+                    id: 6, 
+                    title: 'History Timeline - Modern India', 
+                    description: 'Chronological events of modern Indian history with important dates.', 
+                    subject: 'History', 
+                    class: '12th', 
+                    stream: 'Arts', 
+                    semester: 'Semester 3', 
+                    fileType: 'PDF', 
+                    uploader: 'Anjali Mehta',
+                    downloads: 12,
+                    date: '2023-10-03'
+                }
+            ];
+            
+            sampleResources.forEach(resource => {
+                const resourceEl = document.createElement('div');
+                resourceEl.className = 'resource-card';
+                resourceEl.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    ${resource.fileType}
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-500">${resource.downloads} downloads</div>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">${resource.title}</h3>
+                        <p class="text-gray-600 text-sm mb-4">${resource.description}</p>
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <span class="mr-3"><i class="fas fa-book mr-1"></i> ${resource.subject}</span>
+                            <span><i class="fas fa-user-graduate mr-1"></i> ${resource.class}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <button onclick="downloadResource(${resource.id}, '${resource.title}')" class="btn btn-primary flex items-center">
+                                <i class="fas fa-download mr-2"></i> Download
+                            </button>
+                            <button onclick="openMessaging('${resource.uploader}')" class="text-gray-500 hover:text-gray-700 text-sm font-medium flex items-center">
+                                <i class="fas fa-envelope mr-1"></i> Message
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(resourceEl);
+            });
+        }
+
+        function addNewResource() {
+            // In a real app, this would add the resource to the database
+            // For now, we'll just reload the resources
+            loadResources();
+        }
+
+        function loadLeaderboard() {
+            const container = document.getElementById('leaderboard-container');
+            container.innerHTML = '';
+            
+            const leaders = [
+                { name: 'Rahul Sharma', points: 342, uploads: 12 },
+                { name: 'Priya Patel', points: 298, uploads: 10 },
+                { name: 'Amit Kumar', points: 265, uploads: 9 },
+                { name: 'Neha Gupta', points: 231, uploads: 8 },
+                { name: 'Vikram Singh', points: 198, uploads: 7 }
+            ];
+            
+            leaders.forEach((leader, index) => {
+                const leaderEl = document.createElement('div');
+                leaderEl.className = 'flex items-center justify-between py-4 border-b border-gray-100';
+                leaderEl.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold mr-4">
+                            ${index + 1}
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">${leader.name}</h4>
+                            <p class="text-sm text-gray-500">${leader.uploads} uploads</p>
+                        </div>
+                    </div>
+                    <div class="text-lg font-bold text-blue-600">${leader.points} pts</div>
+                `;
+                container.appendChild(leaderEl);
+            });
+        }
+
+        function loadConversations() {
+            const container = document.getElementById('conversations-container');
+            container.innerHTML = '';
+            
+            const conversations = [
+                { name: 'Rahul Sharma', lastMessage: 'Thanks for the notes!', time: '2 hours ago', unread: true },
+                { name: 'Priya Patel', lastMessage: 'Can you share the physics formulas?', time: '1 day ago', unread: false },
+                { name: 'Amit Kumar', lastMessage: 'I uploaded the chemistry notes', time: '2 days ago', unread: false }
+            ];
+            
+            conversations.forEach(convo => {
+                const convoEl = document.createElement('div');
+                convoEl.className = 'flex items-center justify-between py-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 px-2 rounded-lg card-hover';
+                convoEl.onclick = () => openMessaging(convo.name);
+                convoEl.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold mr-4">
+                            ${convo.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">${convo.name} ${convo.unread ? '<span class="inline-block w-2 h-2 rounded-full bg-blue-500 ml-1"></span>' : ''}</h4>
+                            <p class="text-sm text-gray-500">${convo.lastMessage}</p>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400">${convo.time}</div>
+                `;
+                container.appendChild(convoEl);
+            });
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners for auth button
+            document.getElementById('auth-button').addEventListener('click', showLogin);
+        });
+    </script>
+</body>
+</html>
