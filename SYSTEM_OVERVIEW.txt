@@ -1,0 +1,230 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   FREE FIRE AUTO HEADSHOT SYSTEM OVERVIEW                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              SYSTEM ARCHITECTURE                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+                              ┌─────────────────┐
+                              │  HeadshotConfig │
+                              │   (Settings)    │
+                              └────────┬────────┘
+                                       │
+                                       ▼
+                              ┌─────────────────┐
+                              │  AutoHeadshot   │◄──── Main Controller
+                              │   (Coordinator) │
+                              └────────┬────────┘
+                                       │
+                    ┌──────────────────┼──────────────────┐
+                    ▼                  ▼                  ▼
+          ┌──────────────────┐ ┌──────────────┐ ┌──────────────────┐
+          │ TargetDetection  │ │ HeadshotAimBot│ │   Statistics     │
+          │  (Find Enemies)  │ │ (Aim Assist) │ │   (Tracking)     │
+          └──────────────────┘ └──────────────┘ └──────────────────┘
+                    │                  │                  │
+                    ▼                  ▼                  ▼
+          ┌──────────────────┐ ┌──────────────┐ ┌──────────────────┐
+          │ • Scan Range     │ │ • Calculate  │ │ • Total Shots    │
+          │ • Check FOV      │ │   Adjustment │ │ • Headshots      │
+          │ • Line of Sight  │ │ • Predict    │ │ • Accuracy %     │
+          │ • Prioritize     │ │   Movement   │ │                  │
+          │ • Track Targets  │ │ • Compensate │ │                  │
+          └──────────────────┘ └──────────────┘ └──────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              EXECUTION FLOW                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  1. DETECT TARGETS
+     │
+     ├─► Scan for enemies within range (default: 100m)
+     ├─► Filter by Field of View (FOV: 90°)
+     ├─► Check line of sight
+     └─► Calculate priority scores
+     
+  2. SELECT BEST TARGET
+     │
+     ├─► Prioritize attacking enemies
+     ├─► Consider distance (closer = better)
+     ├─► Consider angle (in crosshair = better)
+     ├─► Consider health (lower = easier kill)
+     └─► Consider helmet level (weaker = easier)
+     
+  3. CALCULATE AIM ADJUSTMENT
+     │
+     ├─► Predict target position (velocity + distance)
+     ├─► Calculate required aim vector
+     ├─► Apply distance scaling
+     ├─► Apply smoothing for natural movement
+     └─► Apply aim assist strength
+     
+  4. APPLY COMPENSATION
+     │
+     ├─► Recoil compensation (weapon-specific)
+     ├─► Bullet drop compensation (long range)
+     └─► Sensitivity adjustment (scope-based)
+     
+  5. EXECUTE SHOT
+     │
+     ├─► Check if target in crosshair
+     ├─► Auto-fire if enabled
+     ├─► Calculate damage (headshot multiplier)
+     └─► Update statistics
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           TARGET PRIORITY FORMULA                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  Priority Score = (Distance × 0.5) + (Angle × 2.0) + (Health/100 × 10)
+                   + (HelmetLevel × 5) - (IsAttacking ? 50 : 0)
+  
+  Lower score = Higher priority
+  
+  Examples:
+  • Attacking enemy at 20m, 10° angle, 50 HP, Level 1 helmet
+    = (20×0.5) + (10×2.0) + (50/100×10) + (1×5) - 50 = -10 (HIGHEST)
+  
+  • Passive enemy at 50m, 30° angle, 100 HP, Level 3 helmet
+    = (50×0.5) + (30×2.0) + (100/100×10) + (3×5) - 0 = 110 (LOWEST)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         WEAPON CATEGORIES & MULTIPLIERS                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────┬──────────────┬─────────────┬──────────────┐
+  │ Weapon Category │ Base Damage  │ HS Multiplier│ Effective Range│
+  ├─────────────────┼──────────────┼─────────────┼──────────────┤
+  │ Sniper Rifles   │ 82-91        │ 2.4x - 3.0x │ 70-150m      │
+  │ Assault Rifles  │ 53-77        │ 2.0x - 2.15x│ 30-70m       │
+  │ SMGs            │ 46-48        │ 1.85x - 1.9x│ 10-40m       │
+  │ Shotguns        │ 19-100       │ 1.5x        │ 5-20m        │
+  │ Pistols         │ 48-89        │ 1.95x - 2.2x│ 10-30m       │
+  └─────────────────┴──────────────┴─────────────┴──────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           CONFIGURATION PARAMETERS                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  AIM ASSIST
+  ├─ EnableAimAssist: true/false
+  ├─ AimAssistStrength: 0.0 - 1.0 (default: 0.75)
+  ├─ AimAssistRange: meters (default: 100m)
+  └─ HeadTrackingSpeed: multiplier (default: 1.5x)
+
+  RECOIL CONTROL
+  ├─ EnableRecoilCompensation: true/false
+  ├─ VerticalRecoilControl: 0.0 - 1.0 (default: 0.8)
+  └─ HorizontalRecoilControl: 0.0 - 1.0 (default: 0.85)
+
+  PREDICTION
+  ├─ PredictiveAiming: true/false
+  ├─ PredictionFactor: 0.0 - 1.0 (default: 0.5)
+  ├─ BulletSpeed: multiplier (default: 1.0)
+  └─ BulletDrop: multiplier (default: 1.0)
+
+  SENSITIVITY (per scope)
+  ├─ GeneralSensitivity: 100
+  ├─ RedDotSensitivity: 95
+  ├─ TwoXScopeSensitivity: 85
+  ├─ FourXScopeSensitivity: 70
+  └─ EightXScopeSensitivity: 50
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              DEMO SCENARIOS                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  SCENARIO 1: Close Range Combat
+  ├─ Weapon: M4A1 + Red Dot
+  ├─ Distance: 10-30m
+  ├─ Targets: 2 enemies
+  └─ Focus: Fast target acquisition
+
+  SCENARIO 2: Medium Range Combat
+  ├─ Weapon: AK47 + 2x Scope
+  ├─ Distance: 30-70m
+  ├─ Targets: 2 moving enemies
+  └─ Focus: Predictive aiming
+
+  SCENARIO 3: Long Range Sniping
+  ├─ Weapon: AWM + 8x Scope
+  ├─ Distance: 70-150m
+  ├─ Targets: 2 moving enemies
+  └─ Focus: Bullet drop compensation
+
+  SCENARIO 4: Multiple Targets
+  ├─ Weapon: Groza + 4x Scope
+  ├─ Distance: 35-50m
+  ├─ Targets: 4 enemies (2 attacking)
+  └─ Focus: Priority-based targeting
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            PERFORMANCE METRICS                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  Code Statistics:
+  ├─ Total Lines: 2,147
+  ├─ Total Files: 5 (.cs files)
+  ├─ Classes: 10+
+  └─ Methods: 50+
+
+  Features:
+  ├─ Weapons Supported: 25+
+  ├─ Target Detection Range: Configurable (default 100m)
+  ├─ Update Rate: Per-frame (60 FPS recommended)
+  └─ Max Targets: Unlimited (performance dependent)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              COMPILATION GUIDE                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  Using Mono (Linux/Mac):
+  $ mcs -out:AutoHeadshot.exe HeadshotConfig.cs AutoHeadshot.cs \
+        HeadshotAimBot.cs TargetDetection.cs Program.cs
+  $ mono AutoHeadshot.exe
+
+  Using .NET Framework (Windows):
+  > csc /out:AutoHeadshot.exe HeadshotConfig.cs AutoHeadshot.cs ^
+        HeadshotAimBot.cs TargetDetection.cs Program.cs
+  > AutoHeadshot.exe
+
+  Using .NET Core/5+:
+  $ dotnet new console -n FreeFire
+  $ cp *.cs FreeFire/
+  $ cd FreeFire && dotnet build && dotnet run
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                KEY FEATURES                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+  ✓ Automatic Target Detection
+    └─ Scans environment for enemies within configurable range
+  
+  ✓ Smart Target Prioritization
+    └─ Multi-factor scoring system for optimal target selection
+  
+  ✓ Predictive Aiming
+    └─ Calculates future position based on target velocity
+  
+  ✓ Smooth Aim Transitions
+    └─ Natural-looking aim movement with configurable smoothing
+  
+  ✓ Recoil Compensation
+    └─ Weapon-specific patterns with automatic compensation
+  
+  ✓ Bullet Drop Compensation
+    └─ Distance-based elevation adjustment for long-range shots
+  
+  ✓ Real-time Statistics
+    └─ Tracks shots, headshots, and accuracy percentage
+  
+  ✓ Configurable Settings
+    └─ Extensive configuration options for customization
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           SYSTEM READY TO USE!                               ║
+║                                                                              ║
+║  See QUICK_START.md for compilation instructions                            ║
+║  See AUTO_HEADSHOT_README.md for detailed documentation                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
