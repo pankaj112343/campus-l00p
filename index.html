@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote of the Day</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            50% {
+                transform: translate(-50px, -50px);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quote-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        .quote-text {
+            font-size: 28px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        .quote-author {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-weight: 600;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .date {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 30px;
+            }
+
+            .quote-text {
+                font-size: 22px;
+            }
+
+            .quote-author {
+                font-size: 16px;
+            }
+
+            .date {
+                position: static;
+                margin-bottom: 20px;
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="date" id="currentDate"></div>
+    
+    <div class="container">
+        <div class="quote-icon">"</div>
+        <div class="quote-text" id="quoteText"></div>
+        <div class="quote-author" id="quoteAuthor"></div>
+        <button class="refresh-btn" onclick="location.reload()">Get New Quote</button>
+    </div>
+
+    <script>
+        const quotes = [
+            {
+                text: "The only way to do great work is to love what you do.",
+                author: "Steve Jobs"
+            },
+            {
+                text: "Believe you can and you're halfway there.",
+                author: "Theodore Roosevelt"
+            },
+            {
+                text: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+                author: "Winston Churchill"
+            },
+            {
+                text: "The future belongs to those who believe in the beauty of their dreams.",
+                author: "Eleanor Roosevelt"
+            },
+            {
+                text: "It does not matter how slowly you go as long as you do not stop.",
+                author: "Confucius"
+            },
+            {
+                text: "Everything you've ever wanted is on the other side of fear.",
+                author: "George Addair"
+            },
+            {
+                text: "Believe in yourself. You are braver than you think, more talented than you know, and capable of more than you imagine.",
+                author: "Roy T. Bennett"
+            },
+            {
+                text: "I learned that courage was not the absence of fear, but the triumph over it.",
+                author: "Nelson Mandela"
+            },
+            {
+                text: "The only impossible journey is the one you never begin.",
+                author: "Tony Robbins"
+            },
+            {
+                text: "Your limitation—it's only your imagination.",
+                author: "Unknown"
+            },
+            {
+                text: "Great things never come from comfort zones.",
+                author: "Unknown"
+            },
+            {
+                text: "Dream it. Wish it. Do it.",
+                author: "Unknown"
+            },
+            {
+                text: "Success doesn't just find you. You have to go out and get it.",
+                author: "Unknown"
+            },
+            {
+                text: "The harder you work for something, the greater you'll feel when you achieve it.",
+                author: "Unknown"
+            },
+            {
+                text: "Don't stop when you're tired. Stop when you're done.",
+                author: "Unknown"
+            },
+            {
+                text: "Wake up with determination. Go to bed with satisfaction.",
+                author: "Unknown"
+            },
+            {
+                text: "Do something today that your future self will thank you for.",
+                author: "Sean Patrick Flanery"
+            },
+            {
+                text: "Little things make big days.",
+                author: "Unknown"
+            },
+            {
+                text: "It's going to be hard, but hard does not mean impossible.",
+                author: "Unknown"
+            },
+            {
+                text: "Don't wait for opportunity. Create it.",
+                author: "Unknown"
+            }
+        ];
+
+        // Get random quote
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        
+        // Display quote
+        document.getElementById('quoteText').textContent = randomQuote.text;
+        document.getElementById('quoteAuthor').textContent = '— ' + randomQuote.author;
+
+        // Display current date
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date();
+        document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', options);
+    </script>
+</body>
+</html>
